@@ -73,3 +73,18 @@ exports.getIngresos = async (req, res) => {
   const total = data.reduce((acc, p) => acc + parseFloat(p.precio || 0), 0);
   res.json({ total });
 };
+exports.marcarPendiente = async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from("paquetes")
+    .update({
+      estado: "pendiente",
+      fecha_entregado: null,
+      precio: null
+    })
+    .eq("id", id);
+
+  if (error) return res.status(500).json({ error });
+  res.json({ success: true });
+};
