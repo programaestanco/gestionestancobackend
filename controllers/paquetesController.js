@@ -1,11 +1,11 @@
 const supabase = require("../supabaseClient");
 
 const PRECIOS_EMPRESA = {
-  Amazon: 1.5,
-  Seur: 1.0,
-  "Correos Express": 1.2,
-  DHL: 1.3,
-  Otros: 0.8
+  Amazon: 0.25,
+  Seur: 0.25,
+  Correos_Express: 0.25,
+  DHL: 0.25,
+  Otros: 0.25
 };
 
 exports.getPaquetes = async (req, res) => {
