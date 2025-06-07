@@ -3,7 +3,18 @@ const cors = require("cors");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+
+// ✅ CORS configurado para localhost y Vercel
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://gestionestanco.vercel.app",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 const paquetesRoutes = require("./routes/paquetesRoutes");
