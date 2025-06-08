@@ -3,8 +3,13 @@ const supabase = require("../supabaseClient");
 const PRECIOS_EMPRESA = {
   Amazon: 0.25,
   Seur: 0.25,
-  Correos_Express: 0.25,
+  CorreosExpress: 0.25,
   DHL: 0.25,
+  UPS: 0.25,
+  GLS: 0.25,
+  CTT: 0.25,
+  Celeritas: 0.25,
+  MRW: 0.25,
   Otros: 0.25
 };
 
@@ -39,7 +44,12 @@ exports.entregarPaquete = async (req, res) => {
 
   if (getErr) return res.status(500).json({ error: getErr });
 
-  const precio = PRECIOS_EMPRESA[data.compania] || PRECIOS_EMPRESA["Otros"];
+  const normalizar = (str) => (str || "").trim().replace(/\s+/g, "").toLowerCase();
+  const clave = Object.keys(PRECIOS_EMPRESA).find(
+    (k) => normalizar(k) === normalizar(data.compania)
+  ) || "Otros";
+
+  const precio = PRECIOS_EMPRESA[clave];
 
   const { error } = await supabase
     .from("paquetes")
@@ -53,6 +63,7 @@ exports.entregarPaquete = async (req, res) => {
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
+
 
 exports.eliminarPaquete = async (req, res) => {
   const { id } = req.params;
