@@ -25,6 +25,11 @@ exports.getPaquetes = async (req, res) => {
 
 exports.registrarPaquete = async (req, res) => {
   const { cliente, compania, compartimento } = req.body;
+
+  if (!cliente || !compania || !compartimento) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+
   const { error } = await supabase.from("paquetes").insert([
     { cliente, compania, compartimento }
   ]);
@@ -36,13 +41,13 @@ exports.registrarPaquete = async (req, res) => {
 exports.entregarPaquete = async (req, res) => {
   const { id } = req.params;
 
-  const { data, error: getErr } = await supabase
+  const { data, error: getError } = await supabase
     .from("paquetes")
     .select("*")
     .eq("id", id)
     .single();
 
-  if (getErr) return res.status(500).json({ error: getErr });
+  if (getError) return res.status(500).json({ error: getError });
 
   const normalizar = (str) => (str || "").trim().replace(/\s+/g, "").toLowerCase();
   const clave = Object.keys(PRECIOS_EMPRESA).find(
@@ -51,24 +56,29 @@ exports.entregarPaquete = async (req, res) => {
 
   const precio = PRECIOS_EMPRESA[clave];
 
-  const { error } = await supabase
+  // Obtener fecha/hora local (no UTC)
+  const ahoraLocal = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+    .toISOString()
+    .replace("T", " ")
+    .slice(0, 19); // "YYYY-MM-DD HH:mm:ss"
+
+  const { error: updateError } = await supabase
     .from("paquetes")
     .update({
       estado: "entregado",
-      fecha_entregado: new Date(),
+      fecha_entregado: ahoraLocal,
       precio
     })
     .eq("id", id);
 
-  if (error) return res.status(500).json({ error });
+  if (updateError) return res.status(500).json({ error: updateError });
   res.json({ success: true });
 };
 
-
 exports.eliminarPaquete = async (req, res) => {
   const { id } = req.params;
-  const { error } = await supabase.from("paquetes").delete().eq("id", id);
 
+  const { error } = await supabase.from("paquetes").delete().eq("id", id);
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
@@ -84,6 +94,7 @@ exports.getIngresos = async (req, res) => {
   const total = data.reduce((acc, p) => acc + parseFloat(p.precio || 0), 0);
   res.json({ total });
 };
+
 exports.marcarPendiente = async (req, res) => {
   const { id } = req.params;
 
