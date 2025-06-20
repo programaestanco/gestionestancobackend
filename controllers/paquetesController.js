@@ -110,3 +110,19 @@ exports.marcarPendiente = async (req, res) => {
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
+exports.editarPaquete = async (req, res) => {
+  const { id } = req.params;
+  const { cliente, compania, compartimento } = req.body;
+
+  if (!cliente || !compania || !compartimento) {
+    return res.status(400).json({ error: "Faltan campos obligatorios" });
+  }
+
+  const { error } = await supabase
+    .from("paquetes")
+    .update({ cliente, compania, compartimento })
+    .eq("id", id);
+
+  if (error) return res.status(500).json({ error });
+  res.json({ success: true });
+};
