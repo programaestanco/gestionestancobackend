@@ -17,14 +17,19 @@ app.use(
 
 app.use(express.json());
 
+// Rutas principales
 const paquetesRoutes = require("./routes/paquetesRoutes");
-app.use("/api/paquetes", paquetesRoutes);
+const estadisticasRoutes = require("./routes/estadisticas.routes");
 
-// ✅ Ruta de salud para mantener el backend activo
+app.use("/api/paquetes", paquetesRoutes);
+app.use("/api/stats", estadisticasRoutes); // ✅ Nueva ruta para gráficos
+
+// Ruta de salud para mantener el backend activo
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
 
+// Iniciar servidor
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
