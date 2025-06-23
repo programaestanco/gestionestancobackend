@@ -1,8 +1,7 @@
-// controllers/estadisticasController.js
 const supabase = require("../supabaseClient");
 
 exports.getVolumenPaquetes = async (req, res) => {
-  const periodo = req.query.periodo || "anual"; // 'anual' | 'mensual' | 'semanal'
+  const periodo = req.query.periodo || "anual"; // 'anual', 'mensual', 'semanal'
 
   const { data, error } = await supabase
     .from("paquetes")
@@ -19,7 +18,7 @@ exports.getVolumenPaquetes = async (req, res) => {
     const getClave = (date) => {
       if (periodo === "mensual") return date.getDate().toString().padStart(2, "0");
       if (periodo === "semanal") return ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"][date.getDay()];
-      return date.toLocaleString("default", { month: "short" }); // anual
+      return date.toLocaleString("default", { month: "short" });
     };
 
     if (recibido) {
@@ -40,9 +39,8 @@ exports.getVolumenPaquetes = async (req, res) => {
     ...valores
   }));
 
-  // Orden por mes si anual
   if (periodo === "anual") {
-    const ordenMeses = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const ordenMeses = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     datos.sort((a, b) => ordenMeses.indexOf(a.periodo) - ordenMeses.indexOf(b.periodo));
   }
 

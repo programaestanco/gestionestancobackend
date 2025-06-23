@@ -22,7 +22,7 @@ const paquetesRoutes = require("./routes/paquetesRoutes");
 const estadisticasRoutes = require("./routes/estadisticas.routes");
 
 app.use("/api/paquetes", paquetesRoutes);
-app.use("/api/stats", estadisticasRoutes); // ✅ Nueva ruta para gráficos
+app.use("/api/stats", estadisticasRoutes);
 
 // Ruta de salud para mantener el backend activo
 app.get("/health", (req, res) => {
