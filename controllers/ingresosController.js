@@ -1,13 +1,14 @@
 const supabase = require("../supabaseClient");
 
-exports.getVolumenPaquetes = async (req, res) => {
+exports.getIngresos = async (req, res) => {
   try {
     const periodo = req.query.periodo || "anual";
     const fechaParam = req.query.fecha;
+    const PRECIO_ENTREGA = 0.25;
 
     const { data, error } = await supabase
       .from("paquetes")
-      .select("estado, fecha_recibido, fecha_entregado, precio");
+      .select("estado, fecha_entregado");
 
     if (error) {
       console.error("❌ Error al consultar Supabase:", error);
@@ -16,7 +17,6 @@ exports.getVolumenPaquetes = async (req, res) => {
 
     const agrupados = {};
 
-    // Rango diario si se aplica
     let inicioDia = null;
     let finDia = null;
 
@@ -25,29 +25,10 @@ exports.getVolumenPaquetes = async (req, res) => {
       inicioDia = new Date(año, mes - 1, dia, 0, 0, 0);
       finDia = new Date(año, mes - 1, dia, 23, 59, 59, 999);
 
-      // Inicializar 24h
       for (let h = 0; h < 24; h++) {
         const clave = h.toString().padStart(2, "0");
-        agrupados[clave] = { recibidos: 0, entregados: 0 };
+        agrupados[clave] = { ingresos: 0 };
       }
-    }
-
-    // Rango semanal si se aplica
-    let inicioSemana = null;
-    let finSemana = null;
-
-    if (periodo === "semanal" && fechaParam) {
-      const base = new Date(fechaParam);
-      const diaSemana = base.getDay();
-      const offsetLunes = (diaSemana === 0 ? -6 : 1 - diaSemana);
-
-      inicioSemana = new Date(base);
-      inicioSemana.setDate(base.getDate() + offsetLunes);
-      inicioSemana.setHours(0, 0, 0, 0);
-
-      finSemana = new Date(inicioSemana);
-      finSemana.setDate(inicioSemana.getDate() + 6);
-      finSemana.setHours(23, 59, 59, 999);
     }
 
     const getClave = (date) => {
@@ -68,36 +49,16 @@ exports.getVolumenPaquetes = async (req, res) => {
     };
 
     for (const p of data) {
-      const recibido = p.fecha_recibido ? new Date(p.fecha_recibido) : null;
-      const entregado = p.fecha_entregado ? new Date(p.fecha_entregado) : null;
+      if (p.estado !== "entregado" || !p.fecha_entregado) continue;
+      const fecha = new Date(p.fecha_entregado);
 
-      if (
-        recibido && (
-          (periodo === "diaria" && recibido >= inicioDia && recibido <= finDia) ||
-          (periodo === "semanal" && recibido >= inicioSemana && recibido <= finSemana) ||
-          (periodo !== "diaria" && periodo !== "semanal")
-        )
-      ) {
-        const clave = getClave(recibido);
-        if (!clave) continue;
-        agrupados[clave] = agrupados[clave] || { recibidos: 0, entregados: 0 };
-        agrupados[clave].recibidos++;
-      }
+      if (periodo === "diaria" && (fecha < inicioDia || fecha > finDia)) continue;
 
-      if (
-        p.estado === "entregado" &&
-        entregado &&
-        (
-          (periodo === "diaria" && entregado >= inicioDia && entregado <= finDia) ||
-          (periodo === "semanal" && entregado >= inicioSemana && entregado <= finSemana) ||
-          (periodo !== "diaria" && periodo !== "semanal")
-        )
-      ) {
-        const clave = getClave(entregado);
-        if (!clave) continue;
-        agrupados[clave] = agrupados[clave] || { recibidos: 0, entregados: 0 };
-        agrupados[clave].entregados++;
-      }
+      const clave = getClave(fecha);
+      if (!clave) continue;
+
+      agrupados[clave] = agrupados[clave] || { ingresos: 0 };
+      agrupados[clave].ingresos += PRECIO_ENTREGA;
     }
 
     const resultado = Object.entries(agrupados).map(([periodo, valores]) => ({
@@ -105,7 +66,7 @@ exports.getVolumenPaquetes = async (req, res) => {
       ...valores,
     }));
 
-    // Ordenar según el periodo
+    // Orden
     if (periodo === "anual") {
       const ordenMeses = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
       resultado.sort((a, b) => ordenMeses.indexOf(a.periodo) - ordenMeses.indexOf(b.periodo));

@@ -20,10 +20,10 @@ app.use(express.json());
 // Rutas principales
 const paquetesRoutes = require("./routes/paquetesRoutes");
 const estadisticasRoutes = require("./routes/estadisticas.routes");
-
+const ingresosRoutes = require("./routes/ingresos.routes");
 app.use("/api/paquetes", paquetesRoutes);
 app.use("/api/stats", estadisticasRoutes);
-
+app.use("/api/stats", ingresosRoutes);
 // Ruta de salud para mantener el backend activo
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
