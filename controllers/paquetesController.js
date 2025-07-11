@@ -95,6 +95,8 @@ exports.getIngresos = async (req, res) => {
   res.json({ total });
 };
 
+// 👇 Función usada por la sección de devoluciones (desactivada)
+/*
 exports.marcarPendiente = async (req, res) => {
   const { id } = req.params;
 
@@ -110,6 +112,8 @@ exports.marcarPendiente = async (req, res) => {
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
+*/
+
 exports.editarPaquete = async (req, res) => {
   const { id } = req.params;
   const { cliente, compania, compartimento } = req.body;
