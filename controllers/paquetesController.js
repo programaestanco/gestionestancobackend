@@ -163,3 +163,19 @@ exports.editarPaquete = async (req, res) => {
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
+// 🔍 Buscar paquetes por cliente (sin límite de fecha o paginación)
+exports.buscarPorCliente = async (req, res) => {
+  const { cliente } = req.query;
+  if (!cliente || cliente.trim().length < 2) {
+    return res.status(400).json({ error: "Falta o es demasiado corto el parámetro 'cliente'" });
+  }
+
+  const { data, error } = await supabase
+    .from("paquetes")
+    .select("*")
+    .ilike("cliente", `%${cliente}%`)
+    .order("fecha_recibido", { ascending: false });
+
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+};

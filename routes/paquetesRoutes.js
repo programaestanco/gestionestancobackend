@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const ctrl = require("../controllers/paquetesController");
 
+router.get("/buscar", ctrl.buscarPorCliente); // 🔍 Buscar por cliente (sin límite)
+
 router.get("/", ctrl.getPaquetes); // Ruta general (opcional)
 router.get("/pendientes", ctrl.getPendientes); // 🔹 Todos los pendientes sin paginación
 router.get("/entregados", ctrl.getEntregados); // 🔹 Entregados paginados por ?desde=
