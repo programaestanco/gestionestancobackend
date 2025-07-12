@@ -13,6 +13,35 @@ const PRECIOS_EMPRESA = {
   Otros: 0.25
 };
 
+// 🔹 PENDIENTES: devolver TODOS, sin paginación
+exports.getPendientes = async (req, res) => {
+  const { data, error } = await supabase
+    .from("paquetes")
+    .select("*")
+    .eq("estado", "pendiente")
+    .order("fecha_recibido", { ascending: false });
+
+  if (error) return res.status(500).json({ error });
+  res.json(data);
+};
+
+// 🔹 ENTREGADOS: paginación por bloques de 500
+exports.getEntregados = async (req, res) => {
+  const desde = parseInt(req.query.desde) || 0;
+  const hasta = desde + 499;
+
+  const { data, error, count } = await supabase
+    .from("paquetes")
+    .select("*", { count: "exact" })
+    .eq("estado", "entregado")
+    .order("fecha_entregado", { ascending: false })
+    .range(desde, hasta);
+
+  if (error) return res.status(500).json({ error });
+  res.json({ data, total: count });
+};
+
+// 🔹 GET combinada (opcional si aún usas /paquetes general)
 exports.getPaquetes = async (req, res) => {
   const desde = parseInt(req.query.desde) || 0;
   const hasta = desde + 499;
@@ -99,7 +128,8 @@ exports.getIngresos = async (req, res) => {
   res.json({ total });
 };
 
-
+// 👇 Función usada por la sección de devoluciones (desactivada)
+/*
 exports.marcarPendiente = async (req, res) => {
   const { id } = req.params;
 
@@ -115,7 +145,7 @@ exports.marcarPendiente = async (req, res) => {
   if (error) return res.status(500).json({ error });
   res.json({ success: true });
 };
-
+*/
 
 exports.editarPaquete = async (req, res) => {
   const { id } = req.params;
