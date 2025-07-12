@@ -14,13 +14,17 @@ const PRECIOS_EMPRESA = {
 };
 
 exports.getPaquetes = async (req, res) => {
-  const { data, error } = await supabase
+  const desde = parseInt(req.query.desde) || 0;
+  const hasta = desde + 499;
+
+  const { data, error, count } = await supabase
     .from("paquetes")
-    .select("*")
-    .order("fecha_recibido", { ascending: false });
+    .select("*", { count: "exact" })
+    .order("fecha_recibido", { ascending: false })
+    .range(desde, hasta);
 
   if (error) return res.status(500).json({ error });
-  res.json(data);
+  res.json({ data, total: count });
 };
 
 exports.registrarPaquete = async (req, res) => {
